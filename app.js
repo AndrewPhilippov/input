@@ -3,6 +3,7 @@ let labelInput = document.querySelector( ".input-brand");
 let caret = document.querySelector( ".caret-box");
 let deleteBtn = document.querySelector( ".delete");
 let unselected = document.querySelector(".unselected");
+let checkbox = document.querySelectorAll('input[type="checkbox"]');
 let selected = document.querySelector(".selected");
 
 labelInput.addEventListener("click", function(){
@@ -10,10 +11,12 @@ labelInput.addEventListener("click", function(){
         label.classList.toggle("clicked");
         caret.classList.toggle("reverted");
         deleteBtn.classList.toggle("visible");
+        unselected.classList.toggle("collapsed");
     } else {
         label.classList.toggle("clicked");
         caret.classList.toggle("reverted");
         deleteBtn.classList.toggle("visible");
+        unselected.classList.toggle("collapsed");
     }
 });
 
@@ -35,8 +38,14 @@ function createInnerUnselected(arr){
             newLi.appendChild(label);
             unselected.appendChild(newLi);
         }
-        console.log(unselected);
-        return unselected;
 }
 
+function addToSelected(elements){
+    for(let i = 0; i < elements.length; i++ ){
+        elements[i].addEventListener("click", function(){
+            console.log(elements[i]);
+        })
+    }
+}
+addToSelected(checkbox);
 createInnerUnselected(itemsArr);
