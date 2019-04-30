@@ -1,0 +1,104 @@
+*,
+*:before,
+*:after{
+  box-sizing: border-box;
+  margin:0;
+  padding: 0;
+}
+
+html{
+  font-family: sans-serif;
+}
+
+body  {
+  background-color: #e5e5e5;
+}
+
+.container{
+  width: 300px;
+  margin: 30px auto 20px;
+}
+.top-input-block{
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+.caret-box{
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  transition: all .2s;
+  &.reverted{
+    top: 0;
+    transform: rotate(180deg) translateY(-50%);
+    transform-origin: center;
+  }
+  & svg{
+    width: 10px;
+  }
+}
+.input-brand{
+  padding: 10px 5px;
+  width: 100%;
+  outline: none;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid blue;
+  position: relative;
+
+}
+.label{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #808080;
+  transition: all .2s;
+  &.clicked{
+    top: -5px;
+    font-size: 80%;
+  }
+
+  & .delete{
+    opacity: 0;
+    &.visible{
+      opacity: 1;
+    }
+    & svg{
+      width: 8px;
+      height: 8px;
+      fill: #aaa;
+      fill: #aaa;
+    }
+  }
+}
+.select-boxes{
+  .selected,
+  .unselected{
+    list-style: none;
+    background-color: #fff;
+    & li{
+      padding: 15px 0 0 40px;
+      position: relative;
+
+      &:last-of-type{
+        padding-bottom: 15px;
+      }
+      &:before{
+        content: '';
+        width: 15px;
+        height: 15px;
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        border: 1px solid black;
+      }
+
+      & input[type="checkbox"]{
+        //display: none;
+      }
+    }
+}
+
+}
