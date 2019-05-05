@@ -1,5 +1,5 @@
 // Helper selector
-const $ = function (selector) {
+let $ = function (selector) {
     return document.querySelector(selector);
 };
 
@@ -8,22 +8,10 @@ let labelInput = $( ".input-brand");
 let caret = $( ".caret-box");
 let deleteBtn = $( ".delete");
 let unselected = $(".unselected");
+let lis = unselected.getElementsByTagName('li');
 let checkbox = document.querySelectorAll('input[type="checkbox"]');
 let selected = $(".selected");
 let itemsBox = $(".items-text");
-let lis = unselected.getElementsByTagName('li');
-let inputString = ``;
-let restItemsNumber = 0;
-let firstTwoSelected = [];
-function createFinalString(num) {
-    if(num === 0){
-        finalString = `${inputString}`;
-    } else if(num > 0){
-        finalString = `${inputString} еще ${num}`;
-    }
-    return finalString;
-};
-
 labelInput.addEventListener("click", openLists);
 labelInput.addEventListener('input', openListsOnType);
 
@@ -68,14 +56,8 @@ function createInnerUnselected(arr){
         unselected.appendChild(newLi);
     }
 }
-
-for(let i = 0; i < lis.length; i++){
-    let li = lis[i];
-    li.onclick = onclickFunction;
-}
-function onclickFunction(e){
+function liToggleChecked(e){
     e.preventDefault();
-
     if(this.childNodes[0].nodeName === 'INPUT') {
         let input = this.childNodes[0];
         input.checked = input.checked !== true; // toggle checkbox
@@ -85,18 +67,17 @@ function onclickFunction(e){
             this.classList.remove('unselected-item');
             this.classList.add('selected-item');
             selected.appendChild(this);
-            firstTwoSelected.push(this);
         } else {
             this.classList.remove('selected-item');
             this.classList.add('unselected-item');
             unselected.appendChild(this);
-            firstTwoSelected.splice(firstTwoSelected.indexOf(this), 1);
         }
     } else {
         alert('childNode is not an input');
     }
 }
 
+/*
 function addToInputBox(){
     let selectedItemsInput = document.createElement('div');
     selectedItemsInput.classList.add('selected-item-input');
@@ -109,7 +90,10 @@ function addToInputBox(){
         deleteBtn.classList.add("visible");
     }
 }
-
-createFinalString(restItemsNumber);
-createInnerUnselected(itemsArr);
 addToInputBox();
+ */
+createInnerUnselected(itemsArr);
+for(let i = 0; i < lis.length; i++){
+    let li = lis[i];
+    li.onclick = liToggleChecked;
+}
