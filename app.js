@@ -1,7 +1,3 @@
-// Helper selector
-function $(elem) {
-    return document.querySelector(elem);
-}
 // Helper to remove element
 Element.prototype.remove = function() {
     this.parentElement.removeChild(this);
@@ -34,18 +30,18 @@ document.addEventListener("click", (e) => {
 });
 
 let multiple = true;
-let label = $( ".label");
-let labelInput = $( ".input-brand");
-let caret = $( ".caret-box");
-let deleteBtn = $( ".delete");
-let unselected = $(".unselected");
+let label = document.querySelector( ".label");
+let labelInput = document.querySelector( ".input-brand");
+let caret = document.querySelector( ".caret-box");
+let deleteBtn = document.querySelector( ".delete");
+let unselected = document.querySelector(".unselected");
 let lis = unselected.getElementsByTagName('li');
 let checkbox = document.querySelectorAll('input[type="checkbox"]');
-let selected = $(".selected");
-let selectBlock = $('.select-block');
+let selected = document.querySelector(".selected");
+let selectBlock = document.querySelector('.select-block');
 let selectedInputArr = [];
 let inputString = '';
-let selectHidden = $('.select-hidden');
+let selectHidden = document.querySelector('.select-hidden');
 let itemsArr = [];
 
 console.log('/________________///________________/');
@@ -62,6 +58,8 @@ labelInput.addEventListener("click", function(){
         toggleOpenClasses();
         label.classList.remove('clicked');
         deleteBtn.classList.remove('visible');
+    } else if (this.value !== ''){
+        this.value = ''
     } else {
         toggleOpenClasses();
         label.classList.add('clicked');
@@ -231,13 +229,48 @@ labelInput.addEventListener('input', function(){
     //     }
     // }
 
+    let match = new Array();
+    let notMatch = new Array();
+
     for(let i = 0; i < unselectedItems.length; i++){
         if(regex.test(unselectedItems[i].textContent)){
+            match.push(unselectedItems[i]);
+
+
             // console.log(unselectedItems[i].textContent);
 
+        } else {
+            notMatch.push(unselectedItems[i]);
         }
     }
+
+    itemsArr = [...match, ...notMatch];
+    unselected.childNodes.remove();
+    createNewLiOnInput(itemsArr);
+    liToggle();
 });
+
+function createNewLiOnInput(arr){
+    for(let i = 0; i < arr.length; i++){
+        let checkbox = document.createElement("input");
+        let label = document.createElement("label");
+        let newLi = document.createElement("li");
+
+        checkbox.type = "checkbox";
+        checkbox.value = i;
+        checkbox.id = "item["+ i +"]";
+
+        label.setAttribute("for","item["+ i +"]");
+        label.innerText = arr[i].textContent;
+
+        newLi.classList.add("unselected-item");
+        newLi.appendChild(checkbox);
+        newLi.appendChild(label);
+
+        unselected.appendChild(newLi);
+    }
+}
+
 /*
 * console.log('/________________///________________/');
 * console.log('/++++++++++++++++///++++++++++++++++/');
