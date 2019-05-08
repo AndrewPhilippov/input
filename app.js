@@ -26,11 +26,14 @@ document.addEventListener("click", (e) => {
     } while (targetElement);
     // This is a click outside.
     removeOpenClasses();
-    labelToggle()
+    labelToggle();
+    if(labelInput.value !== ''){
+        label.classList.add('clicked');
+        deleteBtn.classList.add('visible');
+    }
 });
 
 let multiple = true;
-let itemsArr = ["Универсал", "Хэтчбек", "Внедорожник", "Минивэн", "Седан"];
 let label = $( ".label");
 let labelInput = $( ".input-brand");
 let caret = $( ".caret-box");
@@ -42,9 +45,20 @@ let selected = $(".selected");
 let selectBlock = $('.select-block');
 let selectedInputArr = [];
 let inputString = '';
+let selectHidden = $('.select-hidden');
+let itemsArr = [];
+
+console.log('/________________///________________/');
+
+let optionsList = document.querySelectorAll('.select-hidden option');
+for(let i = 0; i < optionsList.length; i++){
+    itemsArr.push(optionsList[i].textContent);
+}
+console.log(itemsArr);
+console.log('/++++++++++++++++///++++++++++++++++/');
 
 labelInput.addEventListener("click", function(){
-    if(inputString  === ''){
+    if(inputString  === '' && labelInput.value === ''){
         toggleOpenClasses();
         label.classList.remove('clicked');
         deleteBtn.classList.remove('visible');
@@ -54,6 +68,7 @@ labelInput.addEventListener("click", function(){
         deleteBtn.classList.add('visible');
     }
 });
+
 labelInput.addEventListener('input', addOpenClassesOnInput);
 deleteBtn.addEventListener('click', function(e){
     e.preventDefault();
@@ -70,7 +85,7 @@ function createInnerUnselected(arr){
         let newLi = document.createElement("li");
 
         checkbox.type = "checkbox";
-        checkbox.value = 1;
+        checkbox.value = i;
         checkbox.id = "item["+ i +"]";
 
         label.setAttribute("for","item["+ i +"]");
@@ -94,11 +109,21 @@ function liToggleChecked(e){
                 this.classList.add('selected-item');
                 selected.appendChild(this);
                 selectedInputArr.push(this.textContent);
+                for(let i = 0; i < selectHidden.childNodes.length; i++){
+                    if(selectHidden.childNodes[i].textContent === this.textContent){
+                        selectHidden.childNodes[i].setAttribute('selected', true);
+                    }
+                }
             } else {
                 this.classList.remove('selected-item');
                 this.classList.add('unselected-item');
                 unselected.appendChild(this);
                 selectedInputArr.splice(selectedInputArr.indexOf(this), 1);
+                for(let i = 0; i < selectHidden.childNodes.length; i++){
+                    if(selectHidden.childNodes[i].textContent === this.textContent){
+                        selectHidden.childNodes[i].removeAttribute('selected');
+                    }
+                }
             }
         }
     } else {
@@ -184,17 +209,36 @@ function toggleOpenClasses() {
     selected.classList.toggle("open");
 }
 
-/* TODO TEXT HIGHLIGHT
+
 labelInput.addEventListener('input', function(){
     let value = this.value;
     selected.classList.add('open');
-    let regex = new RegExp(value, "gi");
-    console.log(regex);
+    let regex = new RegExp(value, "ui");
+    // console.log(regex);
     let unselectedItems = document.querySelectorAll('.unselected-item');
+
+    // console.log(unselectedItems);
+
+    // let match =
+
+    // for (let item in unselectedItems) {
+    //     if(!regex.test(unselectedItems[item].textContent)){
+    //
+    //         unselectedItems[item]
+    //
+    //
+    //         console.log(unselectedItems[item].textContent);
+    //     }
+    // }
+
     for(let i = 0; i < unselectedItems.length; i++){
         if(regex.test(unselectedItems[i].textContent)){
-            console.log(unselectedItems[i].textContent);
+            // console.log(unselectedItems[i].textContent);
+
         }
     }
 });
+/*
+* console.log('/________________///________________/');
+* console.log('/++++++++++++++++///++++++++++++++++/');
 */
