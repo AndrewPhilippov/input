@@ -6,7 +6,7 @@ import '../css/components/drop-down-list.scss';
         this.parentElement.removeChild(this);
     };
     NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
-        for(let i = this.length - 1; i >= 0; i--) {
+        for(i = this.length - 1; i >= 0; i--) {
             if(this[i] && this[i].parentElement) {
                 this[i].parentElement.removeChild(this[i]);
             }
@@ -22,53 +22,56 @@ import '../css/components/drop-down-list.scss';
             }
             // Go up the DOM
             targetElement = targetElement.parentNode;
+            if(selected.classList.contains('open') || deleteBtn.classList.contains('visible')){
+                labelInput.style.borderColor = '#1A55F6';
+            } else {
+                labelInput.style.borderColor = '#818181';
+            }
         } while (targetElement);
         // This is a click outside.
         removeOpenClasses();
         labelToggle();
-        if(labelInput.value !== ''){
-            label.classList.add('clicked');
-            deleteBtn.classList.add('visible');
+        if(labelInput.value !== '' && inputValueText.innerHTML !== ''){
+            addDeleteClasses();
         }
-        labelInput.value = inputString;
     });
 
-    let multiple = true;
+    let isMultiple = false;
+    let i;
     let label = document.querySelector( ".label");
-    let labelInput = document.querySelector( ".input-brand");
+    let labelInput = document.querySelector( ".input-text");
     let caret = document.querySelector( ".caret-box");
     let deleteBtn = document.querySelector( ".delete");
     let unselected = document.querySelector(".unselected");
     let lis = unselected.getElementsByTagName('li');
-    let checkbox = document.querySelectorAll('input[type="checkbox"]');
     let selected = document.querySelector(".selected");
     let selectBlock = document.querySelector('.select-block');
     let selectBoxes = document.querySelector('.select-boxes');
     let selectedInputArr = [];
-    let inputString = '';
     let selectHidden = document.querySelector('.select-hidden');
     let itemsArr = [];
-
+    let inputValueText = document.querySelector('.input-value-text');
     let optionsList = document.querySelectorAll('.select-hidden option');
-    for(let i = 0; i < optionsList.length; i++){
+    for(i = 0; i < optionsList.length; i++){
         itemsArr.push(optionsList[i].textContent);
     }
 
     labelInput.addEventListener("click", function(){
-        if(inputString  === '' && labelInput.value === ''){
-            toggleOpenClasses();
-            label.classList.remove('clicked');
-            deleteBtn.classList.remove('visible');
-        } else if (this.value !== ''){
-            this.value = ''
+        if(inputValueText.innerHTML  === '' && labelInput.value === ''){
+            addOpenClassesOnInput();
+            removeDeleteClasses()
+        } else if (inputValueText.innerHTML !== ''){
+            inputValueText.innerHTML = '';
+            addOpenClassesOnInput();
+            addDeleteClasses()
         } else {
             toggleOpenClasses();
-            label.classList.add('clicked');
-            deleteBtn.classList.add('visible');
+            addDeleteClasses()
         }
     });
 
     labelInput.addEventListener('input', addOpenClassesOnInput);
+
     deleteBtn.addEventListener('click', function(e){
         e.preventDefault();
         clearAll();
@@ -77,38 +80,42 @@ import '../css/components/drop-down-list.scss';
     liToggle();
 
     function createInnerUnselected(arr){
+            for(i = 0; i < arr.length; i++){
+                let checkbox = document.createElement("input");
+                let label = document.createElement("label");
+                let newLi = document.createElement("li");
 
-        for(let i = 0; i < arr.length; i++){
-            let checkbox = document.createElement("input");
-            let label = document.createElement("label");
-            let newLi = document.createElement("li");
+                checkbox.type = "checkbox";
+                checkbox.value = i;
+                checkbox.id = "item["+ i +"]";
 
-            checkbox.type = "checkbox";
-            checkbox.value = i;
-            checkbox.id = "item["+ i +"]";
+                label.setAttribute("for","item["+ i +"]");
+                if(typeof arr[0] === 'string'){
+                    label.innerText = arr[i];
+                } else {
+                    label.innerText = arr[i].textContent;
+                }
 
-            label.setAttribute("for","item["+ i +"]");
-            label.innerText = arr[i];
+                newLi.classList.add("unselected-item");
+                newLi.appendChild(checkbox);
+                newLi.appendChild(label);
 
-            newLi.classList.add("unselected-item");
-            newLi.appendChild(checkbox);
-            newLi.appendChild(label);
-
-            unselected.appendChild(newLi);
-        }
+                unselected.appendChild(newLi);
+            }
     }
     function liToggleChecked(e){
+        labelInput.value = '';
         e.preventDefault();
         if(this.childNodes[0].nodeName === 'INPUT') {
             let input = this.childNodes[0];
             input.checked = input.checked !== true; // toggle checkbox
-            if(multiple){
+            if(isMultiple){
                 if(input.checked){
                     this.classList.remove('unselected-item');
                     this.classList.add('selected-item');
                     selected.appendChild(this);
                     selectedInputArr.push(this.textContent);
-                    for(let i = 0; i < selectHidden.childNodes.length; i++){
+                    for(i = 0; i < selectHidden.childNodes.length; i++){
                         if(selectHidden.childNodes[i].textContent === this.textContent){
                             selectHidden.childNodes[i].setAttribute('selected', true);
                         }
@@ -118,7 +125,37 @@ import '../css/components/drop-down-list.scss';
                     this.classList.add('unselected-item');
                     unselected.appendChild(this);
                     selectedInputArr.splice(selectedInputArr.indexOf(this), 1);
-                    for(let i = 0; i < selectHidden.childNodes.length; i++){
+                    for(i = 0; i < selectHidden.childNodes.length; i++){
+                        if(selectHidden.childNodes[i].textContent === this.textContent){
+                            selectHidden.childNodes[i].removeAttribute('selected');
+                        }
+                    }
+                }
+            } else {
+                if(input.checked){
+                    selectedInputArr = [];
+                    for(i = 0; i < selected.childNodes.length; i++){
+                        selected.childNodes[i].childNodes[0].checked = false;
+                        unselected.appendChild(selected.childNodes[i]);
+                    }
+                    this.classList.remove('unselected-item');
+                    this.classList.add('selected-item');
+                    selected.appendChild(this);
+                    selectedInputArr.push(this.textContent);
+                    for(i = 0; i < selectHidden.children.length; i++){
+                        selectHidden.children[i].removeAttribute('selected');
+                    }
+                    for(i = 0; i < selectHidden.childNodes.length; i++){
+                        if(selectHidden.childNodes[i].textContent === this.textContent){
+                            selectHidden.childNodes[i].setAttribute('selected', true);
+                        }
+                    }
+                } else {
+                    this.classList.remove('selected-item');
+                    this.classList.add('unselected-item');
+                    unselected.appendChild(this);
+                    selectedInputArr.splice(selectedInputArr.indexOf(this), 1);
+                    for(i = 0; i < selectHidden.childNodes.length; i++){
                         if(selectHidden.childNodes[i].textContent === this.textContent){
                             selectHidden.childNodes[i].removeAttribute('selected');
                         }
@@ -129,25 +166,26 @@ import '../css/components/drop-down-list.scss';
             alert('childNode is not an input');
         }
         createInputString(selectedInputArr);
-        labelInput.value = inputString;
+        // labelInput.value = inputString;
+
         labelToggle();
     }
 
     function createInputString(arr){
         let itemsRest = arr.length - 2;
         if(arr.length === 1){
-            inputString = '';
-            inputString += arr[0];
+            inputValueText.innerHTML = '';
+            inputValueText.innerHTML = `<span class="highlighted">${arr[0]}</span>`;
         } else if (arr.length === 2){
-            inputString = '';
-            inputString += `${arr[0]}, ${arr[1]}`;
+            inputValueText.innerHTML = '';
+            inputValueText.innerHTML = `<span class="highlighted">${arr[0]}</span>, <span class="highlighted">${arr[1]}</span>`;
         } else {
-            inputString = '';
+            inputValueText.innerHTML = '';
         }
-        for(let i = 0; i < arr.length; i ++){
+        for(i = 0; i < arr.length; i ++){
             if (arr.length > 2){
-                inputString = '';
-                inputString += `${arr[0]}, ${arr[1]}, еще ${itemsRest}`;
+                inputValueText.innerHTML = '';
+                inputValueText.innerHTML = `<span class="highlighted">${arr[0]}</span>, <span class="highlighted">${arr[1]}</span>, еще ${itemsRest}`;
             }
         }
     }
@@ -155,7 +193,7 @@ import '../css/components/drop-down-list.scss';
     function clearAll(){
         selectedInputArr = [];
         labelInput.value = '';
-        inputString = '';
+        inputValueText.innerHTML = '';
         selected.childNodes.remove();
         unselected.childNodes.remove();
         label.classList.remove("clicked");
@@ -165,7 +203,7 @@ import '../css/components/drop-down-list.scss';
         liToggle();
     }
     function liToggle(){
-        for(let i = 0; i < lis.length; i++){
+        for(i = 0; i < lis.length; i++){
             let li = lis[i];
             li.onclick = liToggleChecked;
         }
@@ -179,7 +217,7 @@ import '../css/components/drop-down-list.scss';
     }
 
     function labelToggle(){
-        if(inputString !== ''){
+        if(inputValueText.innerHTML !== ''){
             label.classList.add('clicked');
             deleteBtn.classList.add('visible');
         } else{
@@ -188,26 +226,26 @@ import '../css/components/drop-down-list.scss';
         }
     }
     function addOpenClassesOnInput(){
-        label.classList.add("clicked");
+        addDeleteClasses();
         caret.classList.add("reverted");
-        deleteBtn.classList.add("visible");
         unselected.classList.add("open");
         selected.classList.add("open");
         selectBoxes.classList.add("open");
+        labelInput.style.borderColor = '#1A55F6';
     }
 
     function removeOpenClasses(){
-        label.classList.remove("clicked");
+        removeDeleteClasses();
         caret.classList.remove("reverted");
-        deleteBtn.classList.remove("visible");
         unselected.classList.remove("open");
         selected.classList.remove("open");
         selectBoxes.classList.remove("open");
+        labelInput.style.borderColor = '#818181';
     }
     function toggleOpenClasses() {
         label.classList.toggle("clicked");
-        caret.classList.toggle("reverted");
         deleteBtn.classList.toggle("visible");
+        caret.classList.toggle("reverted");
         unselected.classList.toggle("open");
         selected.classList.toggle("open");
         selectBoxes.classList.toggle("open");
@@ -218,34 +256,17 @@ import '../css/components/drop-down-list.scss';
         let value = this.value;
         selected.classList.add('open');
         selectBoxes.classList.add('open');
+        labelInput.style.borderColor = '#1A55F6';
         let regex = new RegExp(value, "ui");
         // console.log(regex);
         let unselectedItems = document.querySelectorAll('.unselected-item');
+        let match = [];
+        let notMatch = [];
 
-        // console.log(unselectedItems);
-
-        // let match =
-
-        // for (let item in unselectedItems) {
-        //     if(!regex.test(unselectedItems[item].textContent)){
-        //
-        //         unselectedItems[item]
-        //
-        //
-        //         console.log(unselectedItems[item].textContent);
-        //     }
-        // }
-
-        let match = new Array();
-        let notMatch = new Array();
-
-        for(let i = 0; i < unselectedItems.length; i++){
+        for(i = 0; i < unselectedItems.length; i++){
             if(regex.test(unselectedItems[i].textContent)){
+
                 match.push(unselectedItems[i]);
-
-
-                // console.log(unselectedItems[i].textContent);
-
             } else {
                 notMatch.push(unselectedItems[i]);
             }
@@ -253,29 +274,19 @@ import '../css/components/drop-down-list.scss';
 
         itemsArr = [...match, ...notMatch];
         unselected.childNodes.remove();
-        createNewLiOnInput(itemsArr);
+
+        createInnerUnselected(itemsArr);
+
         liToggle();
     });
 
-    function createNewLiOnInput(arr){
-        for(let i = 0; i < arr.length; i++){
-            let checkbox = document.createElement("input");
-            let label = document.createElement("label");
-            let newLi = document.createElement("li");
-
-            checkbox.type = "checkbox";
-            checkbox.value = i;
-            checkbox.id = "item["+ i +"]";
-
-            label.setAttribute("for","item["+ i +"]");
-            label.innerText = arr[i].textContent;
-
-            newLi.classList.add("unselected-item");
-            newLi.appendChild(checkbox);
-            newLi.appendChild(label);
-
-            unselected.appendChild(newLi);
-        }
+    function addDeleteClasses(){
+        label.classList.add('clicked');
+        deleteBtn.classList.add('visible');
+    }
+    function removeDeleteClasses(){
+        label.classList.remove('clicked');
+        deleteBtn.classList.remove('visible');
     }
 
     /*
