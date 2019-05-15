@@ -68,3 +68,45 @@
     <script src="app.js"></script>
 </body>
 </html>
+
+<?php
+
+use yii\helpers\Html;
+
+/**
+ * @var \yii\web\View $this
+ * @var \common\widgets\DropDownList\DropDownList $widget
+ */
+
+$widget = $this->context;
+
+?>
+
+<div class="select-block">
+    <div class="top-input-block">
+        <div class="caret-box"></div>
+        <label for="<?= $widget->getHelpId() ?>" class="label">
+            <?= $widget->customLabel; ?>
+            <span class="delete">
+                &times;
+            </span>
+        </label>
+        <div class="input-ad-value-box">
+            <input type="text" id="<?= $widget->getHelpId() ?>" class="input-text" autocomplete="off">
+            <span class="input-value-text"></span>
+        </div>
+    </div>
+    <div class="select-boxes">
+        <ul class="selected"></ul>
+        <ul class="unselected"></ul>
+    </div>
+</div>
+
+<?= Html::activeDropDownList($widget->model, $widget->attribute, $widget->items, [
+    'class' => 'select-hidden',
+    'multiple' => $widget->multiple,
+])?>
+
+
+<?= Html::activeHint($widget->model, $widget->attribute); ?>
+<?= Html::error($widget->model, $widget->attribute); ?>
