@@ -26,7 +26,10 @@ import '../css/components/drop-down-list.scss';
                 labelInput.style.borderColor = '#818181';
             } else if (selected.classList.contains('open') || deleteBtn.classList.contains('visible')){
                 labelInput.style.borderColor = '#1A55F6';
-            } else {
+            } else if (!selected.childNodes.length){
+                removeSelectedAttribute();
+                labelInput.style.borderColor = '#818181';
+            }else {
                 labelInput.style.borderColor = '#818181';
             }
         } while (targetElement);
@@ -43,7 +46,6 @@ import '../css/components/drop-down-list.scss';
         }
     });
 
-    let isMultiple = false;
     let i;
     let label = document.querySelector( ".label");
     let labelInput = document.querySelector( ".input-text");
@@ -56,10 +58,12 @@ import '../css/components/drop-down-list.scss';
     let selectBoxes = document.querySelector('.select-boxes');
     let selectedInputArr = [];
     let selectHidden = document.querySelector('.select-hidden');
+    let isMultiple = selectHidden.multiple;
     let itemsArr = [];
     let inputValueText = document.querySelector('.input-value-text');
     let optionsList = document.querySelectorAll('.select-hidden option');
     let coveredHTMLInput = '';
+    let event = new Event('change');
 
     for(i = 0; i < optionsList.length; i++){
         itemsArr.push(optionsList[i].textContent);
@@ -125,7 +129,7 @@ import '../css/components/drop-down-list.scss';
 
                 label.setAttribute("for","item["+ i +"]");
                 if(typeof arr[0] === 'string'){
-                    label.innerText = arr[i];
+                    label.innerText = arr[i + 1];
                 } else {
                     label.innerText = arr[i].textContent;
                 }
@@ -151,9 +155,10 @@ import '../css/components/drop-down-list.scss';
                     selectedInputArr.push(this.textContent);
                     for(i = 0; i < selectHidden.childNodes.length; i++){
                         if(selectHidden.childNodes[i].textContent === this.textContent){
-                            selectHidden.childNodes[i].setAttribute('selected', true);
+                            selectHidden.childNodes[i].setAttribute('selected', 'selected');
                         }
                     }
+                    selectHidden.dispatchEvent(event);
                 } else {
                     this.classList.remove('selected-item');
                     this.classList.add('unselected-item');
@@ -164,6 +169,7 @@ import '../css/components/drop-down-list.scss';
                             selectHidden.childNodes[i].removeAttribute('selected');
                         }
                     }
+                    selectHidden.dispatchEvent(event);
                 }
             } else {
                 if(input.checked){
@@ -176,14 +182,13 @@ import '../css/components/drop-down-list.scss';
                     this.classList.add('selected-item');
                     selected.appendChild(this);
                     selectedInputArr.push(this.textContent);
-                    for(i = 0; i < selectHidden.children.length; i++){
-                        selectHidden.children[i].removeAttribute('selected');
-                    }
+                    removeSelectedAttribute();
                     for(i = 0; i < selectHidden.childNodes.length; i++){
                         if(selectHidden.childNodes[i].textContent === this.textContent){
-                            selectHidden.childNodes[i].setAttribute('selected', true);
+                            selectHidden.childNodes[i].setAttribute('selected', 'selected');
                         }
                     }
+                    selectHidden.dispatchEvent(event);
                 } else {
                     this.classList.remove('selected-item');
                     this.classList.add('unselected-item');
@@ -238,6 +243,7 @@ import '../css/components/drop-down-list.scss';
         closeLists();
         createInnerUnselected(itemsArr);
         liToggle();
+        removeSelectedAttribute();
     }
     function liToggle(){
         for(i = 0; i < lis.length; i++){
@@ -292,9 +298,10 @@ import '../css/components/drop-down-list.scss';
         label.classList.remove('clicked');
         deleteBtn.classList.remove('visible');
     }
-
-    /*
-    * console.log('/________________///________________/');
-    * console.log('/++++++++++++++++///++++++++++++++++/');
-    */
+    function removeSelectedAttribute(){
+        for(i = 0; i < selectHidden.children.length; i++){
+            selectHidden.children[i].removeAttribute('selected');
+        }
+        selectHidden.dispatchEvent(event);
+    }
 })();
