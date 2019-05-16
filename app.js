@@ -12,7 +12,7 @@ import '../css/components/drop-down-list.scss';
             }
         }
     };
-// Close on outside click event
+    // Close on outside click event
     document.addEventListener("click", (e) => {
         let targetElement = e.target;  // clicked element
         do {
@@ -22,7 +22,9 @@ import '../css/components/drop-down-list.scss';
             }
             // Go up the DOM
             targetElement = targetElement.parentNode;
-            if(selected.classList.contains('open') || deleteBtn.classList.contains('visible')){
+            if (deleteBtn.classList.contains('visible') && !caret.classList.contains('reverted')) {
+                labelInput.style.borderColor = '#818181';
+            } else if (selected.classList.contains('open') || deleteBtn.classList.contains('visible')){
                 labelInput.style.borderColor = '#1A55F6';
             } else {
                 labelInput.style.borderColor = '#818181';
@@ -33,6 +35,11 @@ import '../css/components/drop-down-list.scss';
         labelToggle();
         if(labelInput.value !== '' && inputValueText.innerHTML !== ''){
             addDeleteClasses();
+        } else if (coveredHTMLInput !== ''){
+            addDeleteClasses();
+            inputValueText.innerHTML = coveredHTMLInput;
+        } else {
+            labelInput.value = ''
         }
     });
 
@@ -52,6 +59,8 @@ import '../css/components/drop-down-list.scss';
     let itemsArr = [];
     let inputValueText = document.querySelector('.input-value-text');
     let optionsList = document.querySelectorAll('.select-hidden option');
+    let coveredHTMLInput = '';
+
     for(i = 0; i < optionsList.length; i++){
         itemsArr.push(optionsList[i].textContent);
     }
@@ -59,7 +68,7 @@ import '../css/components/drop-down-list.scss';
     labelInput.addEventListener("click", function(){
         if(inputValueText.innerHTML  === '' && labelInput.value === ''){
             addOpenClassesOnInput();
-            removeDeleteClasses()
+            addDeleteClasses()
         } else if (inputValueText.innerHTML !== ''){
             inputValueText.innerHTML = '';
             addOpenClassesOnInput();
@@ -69,13 +78,38 @@ import '../css/components/drop-down-list.scss';
             addDeleteClasses()
         }
     });
+    labelInput.addEventListener('input', function(){
+        addOpenClassesOnInput();
+        let value = this.value;
+        selected.classList.add('open');
+        selectBoxes.classList.add('open');
+        labelInput.style.borderColor = '#1A55F6';
+        let regex = new RegExp(value, "ui");
+        let unselectedItems = document.querySelectorAll('.unselected-item');
+        let match = [];
+        let notMatch = [];
 
-    labelInput.addEventListener('input', addOpenClassesOnInput);
+        for(i = 0; i < unselectedItems.length; i++){
+            if(regex.test(unselectedItems[i].textContent)){
 
+                match.push(unselectedItems[i]);
+            } else {
+                notMatch.push(unselectedItems[i]);
+            }
+        }
+
+        itemsArr = [...match, ...notMatch];
+        unselected.childNodes.remove();
+
+        createInnerUnselected(itemsArr);
+
+        liToggle();
+    });
     deleteBtn.addEventListener('click', function(e){
         e.preventDefault();
         clearAll();
     });
+
     createInnerUnselected(itemsArr);
     liToggle();
 
@@ -166,11 +200,13 @@ import '../css/components/drop-down-list.scss';
             alert('childNode is not an input');
         }
         createInputString(selectedInputArr);
-        // labelInput.value = inputString;
+
+        if(!isMultiple){
+            closeLists();
+        }
 
         labelToggle();
     }
-
     function createInputString(arr){
         let itemsRest = arr.length - 2;
         if(arr.length === 1){
@@ -188,12 +224,13 @@ import '../css/components/drop-down-list.scss';
                 inputValueText.innerHTML = `<span class="highlighted">${arr[0]}</span>, <span class="highlighted">${arr[1]}</span>, еще ${itemsRest}`;
             }
         }
+        coveredHTMLInput = inputValueText.innerHTML;
     }
-
     function clearAll(){
         selectedInputArr = [];
         labelInput.value = '';
         inputValueText.innerHTML = '';
+        coveredHTMLInput = '';
         selected.childNodes.remove();
         unselected.childNodes.remove();
         label.classList.remove("clicked");
@@ -208,14 +245,12 @@ import '../css/components/drop-down-list.scss';
             li.onclick = liToggleChecked;
         }
     }
-
     function closeLists(){
         unselected.classList.remove("open");
         selected.classList.remove("open");
         selectBoxes.classList.remove("open");
         caret.classList.remove("reverted");
     }
-
     function labelToggle(){
         if(inputValueText.innerHTML !== ''){
             label.classList.add('clicked');
@@ -233,7 +268,6 @@ import '../css/components/drop-down-list.scss';
         selectBoxes.classList.add("open");
         labelInput.style.borderColor = '#1A55F6';
     }
-
     function removeOpenClasses(){
         removeDeleteClasses();
         caret.classList.remove("reverted");
@@ -250,36 +284,6 @@ import '../css/components/drop-down-list.scss';
         selected.classList.toggle("open");
         selectBoxes.classList.toggle("open");
     }
-
-
-    labelInput.addEventListener('input', function(){
-        let value = this.value;
-        selected.classList.add('open');
-        selectBoxes.classList.add('open');
-        labelInput.style.borderColor = '#1A55F6';
-        let regex = new RegExp(value, "ui");
-        // console.log(regex);
-        let unselectedItems = document.querySelectorAll('.unselected-item');
-        let match = [];
-        let notMatch = [];
-
-        for(i = 0; i < unselectedItems.length; i++){
-            if(regex.test(unselectedItems[i].textContent)){
-
-                match.push(unselectedItems[i]);
-            } else {
-                notMatch.push(unselectedItems[i]);
-            }
-        }
-
-        itemsArr = [...match, ...notMatch];
-        unselected.childNodes.remove();
-
-        createInnerUnselected(itemsArr);
-
-        liToggle();
-    });
-
     function addDeleteClasses(){
         label.classList.add('clicked');
         deleteBtn.classList.add('visible');
