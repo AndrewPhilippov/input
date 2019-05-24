@@ -46,24 +46,24 @@ import '../css/components/drop-down-list.scss';
         }
     });
 
-    let i;
-    let label = document.querySelector( ".label");
-    let labelInput = document.querySelector( ".input-text");
-    let caret = document.querySelector( ".caret-box");
-    let deleteBtn = document.querySelector( ".delete");
-    let unselected = document.querySelector(".unselected");
-    let lis = unselected.getElementsByTagName('li');
-    let selected = document.querySelector(".selected");
-    let selectBlock = document.querySelector('.select-block');
-    let selectBoxes = document.querySelector('.select-boxes');
-    let selectedInputArr = [];
-    let selectHidden = document.querySelector('.select-hidden');
-    let isMultiple = selectHidden.multiple;
-    let itemsArr = [];
-    let inputValueText = document.querySelector('.input-value-text');
-    let optionsList = document.querySelectorAll('.select-hidden option');
-    let coveredHTMLInput = '';
-    let event = new Event('change');
+    let i,
+        label = document.querySelector( ".label"),
+        labelInput = document.querySelector( ".input-text"),
+        caret = document.querySelector( ".caret-box"),
+        deleteBtn = document.querySelector( ".delete"),
+        unselected = document.querySelector(".unselected"),
+        lis = unselected.getElementsByTagName('li'),
+        selected = document.querySelector(".selected"),
+        selectBlock = document.querySelector('.select-block'),
+        selectBoxes = document.querySelector('.select-boxes'),
+        selectedInputArr = [],
+        selectHidden = document.querySelector('.select-hidden'),
+        isMultiple = selectHidden.multiple,
+        itemsArr = [],
+        inputValueText = document.querySelector('.input-value-text'),
+        optionsList = document.querySelectorAll('.select-hidden option'),
+        coveredHTMLInput = '',
+        event = new Event('change');
 
     for(i = 0; i < optionsList.length; i++){
         itemsArr.push(optionsList[i].textContent);
