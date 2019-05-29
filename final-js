@@ -1,0 +1,329 @@
+import '../css/components/drop-down-list.scss';
+
+const DropDownList = {
+    init : function(nodeId) {
+        // Helper to remove element
+        Element.prototype.remove = function () {
+            this.parentElement.removeChild(this);
+        };
+        NodeList.prototype.remove = HTMLCollection.prototype.remove = function () {
+            for (i = this.length - 1; i >= 0; i--) {
+                if (this[i] && this[i].parentElement) {
+                    this[i].parentElement.removeChild(this[i]);
+                }
+            }
+        };
+        // Close on outside click event
+        document.addEventListener("click", (e) => {
+            let targetElement = e.target;  // clicked element
+            do {
+                if (targetElement === selectBlock) {
+                    // This is a click inside. Do nothing, just return.
+                    return;
+                }
+                // Go up the DOM
+                targetElement = targetElement.parentNode;
+                if (deleteBtn.classList.contains('visible') && !caret.classList.contains('reverted')) {
+                    labelInput.style.borderColor = '#818181';
+                } else if (selected.classList.contains('open') || deleteBtn.classList.contains('visible')) {
+                    labelInput.style.borderColor = '#1A55F6';
+                } else if (!selected.childNodes.length) {
+                    removeSelectedAttribute();
+                    labelInput.style.borderColor = '#818181';
+                } else {
+                    labelInput.style.borderColor = '#818181';
+                }
+            } while (targetElement);
+            // This is a click outside.
+            removeOpenClasses();
+            labelToggle();
+            if (labelInput.value !== '' && inputValueText.innerHTML !== '') {
+                addDeleteClasses();
+            } else if (coveredHTMLInput !== '') {
+                addDeleteClasses();
+                labelInput.value = '';
+                inputValueText.innerHTML = coveredHTMLInput;
+            } else {
+                labelInput.value = '';
+                inputValueText.innerHTML = '';
+            }
+        });
+
+        const wrapper = '.form-group.field-' + nodeId + ' ';
+        let i,
+            label = document.querySelector(wrapper + '.label'),
+            labelInput = document.querySelector(wrapper + '.input-text'),
+            caret = document.querySelector(wrapper + '.caret-box'),
+            deleteBtn = document.querySelector(wrapper + '.delete'),
+            unselected = document.querySelector(wrapper + '.unselected'),
+            selected = document.querySelector(wrapper + '.selected'),
+            selectBlock = document.querySelector(wrapper + '.select-block'),
+            selectBoxes = document.querySelector(wrapper + '.select-boxes'),
+            selectedInputArr = [],
+            selectHidden = document.querySelectorAll(wrapper + '.select-hidden')[0],
+            isMultiple = selectHidden.multiple,
+            itemsArr = [],
+            inputValueText = document.querySelector(wrapper + '.input-value-text'),
+            optionsList = document.querySelectorAll(wrapper + 'option'),
+            coveredHTMLInput = '',
+            event = new Event('change');
+
+        function generateItemsArr(options){
+            for (i = 0; i < options.length; i++) {
+                if (options[i].textContent !== undefined) {
+                    itemsArr.push(options[i].textContent);
+                }
+            }
+        }
+        labelInput.addEventListener("click", function () {
+                itemsArr = [];
+                createInnerUnselected(itemsArr);
+                liToggle();
+            if (inputValueText.innerHTML === '' && labelInput.value === '') {
+                addOpenClassesOnInput();
+                addDeleteClasses();
+            } else if (inputValueText.innerHTML !== '') {
+                inputValueText.innerHTML = '';
+                addOpenClassesOnInput();
+                addDeleteClasses();
+            } else {
+                toggleOpenClasses();
+                addDeleteClasses();
+            }
+        });
+        labelInput.addEventListener('input', function () {
+            addOpenClassesOnInput();
+            let value = this.value;
+            selected.classList.add('open');
+            selectBoxes.classList.add('open');
+            labelInput.style.borderColor = '#1A55F6';
+            let regex = new RegExp(value, "ui");
+            let match = [];
+            let notMatch = [];
+
+            for (i = 0; i < unselected.childNodes.length; i++) {
+                if (regex.test(unselected.childNodes[i].textContent)) {
+                    match.push(unselected.childNodes[i].textContent);
+                } else {
+                    notMatch.push(unselected.childNodes[i].textContent);
+                }
+            }
+
+            itemsArr = [...match, ...notMatch];
+
+            unselected.innerHTML = '';
+            console.log(itemsArr);
+
+            createInnerUnselected(itemsArr);
+            liToggle();
+
+        });
+        deleteBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            clearAll();
+        });
+
+        clearAll();
+
+        function createInnerUnselected(arr) {
+
+            for (i = 0; i < arr.length; i++) {
+                let checkbox = document.createElement("input");
+                let label = document.createElement("label");
+                let newLi = document.createElement("li");
+
+                checkbox.type = "checkbox";
+                checkbox.value = i;
+                checkbox.id = "item[" + i + "]";
+
+                label.setAttribute("for", "item[" + i + "]");
+
+                if (typeof arr[0] === 'string') {
+                    label.innerText = arr[i];
+                    let isHex = /\b[0-9A-F]{6}\b/gi;
+
+                    if(arr[i].match(isHex)){
+                        let isMatching = arr[i].match(isHex);
+                        let itemColor = `#${isMatching}`;
+                        let cleanString = arr[i].split(' ');
+                        label.innerHTML = `<span style="background-color: ${itemColor}"></span> ${cleanString[0]}`;
+                    }
+                }
+
+                newLi.classList.add("unselected-item");
+                newLi.appendChild(checkbox);
+                newLi.appendChild(label);
+                if(label.childNodes.length > 1){
+                    label.parentNode.classList.add('color-li');
+                };
+
+                unselected.appendChild(newLi);
+            }
+        }
+        function liToggleChecked(e) {
+            labelInput.value = '';
+            e.preventDefault();
+            if (this.childNodes[0].nodeName === 'INPUT') {
+                let input = this.childNodes[0];
+                input.checked = input.checked !== true; // toggle checkbox
+                if (isMultiple) {
+                    if (input.checked) {
+                        this.classList.remove('unselected-item');
+                        this.classList.add('selected-item');
+                        selected.appendChild(this);
+                        selectedInputArr.push(this.textContent);
+                        for (i = 0; i < selectHidden.childNodes.length; i++) {
+                            if (selectHidden.childNodes[i].textContent === this.textContent) {
+                                selectHidden.childNodes[i].setAttribute('selected', 'selected');
+                            }
+                        }
+                        selectHidden.dispatchEvent(event);
+                    } else {
+                        this.classList.remove('selected-item');
+                        this.classList.add('unselected-item');
+                        unselected.appendChild(this);
+                        selectedInputArr.splice(selectedInputArr.indexOf(this), 1);
+                        for (i = 0; i < selectHidden.childNodes.length; i++) {
+                            if (selectHidden.childNodes[i].textContent === this.textContent) {
+                                selectHidden.childNodes[i].removeAttribute('selected');
+                            }
+                        }
+                        selectHidden.dispatchEvent(event);
+                    }
+                } else {
+                    if (input.checked) {
+                        selectedInputArr = [];
+                        for (i = 0; i < selected.childNodes.length; i++) {
+                            selected.childNodes[i].childNodes[0].checked = false;
+                            unselected.appendChild(selected.childNodes[i]);
+                        }
+                        this.classList.remove('unselected-item');
+                        this.classList.add('selected-item');
+                        selected.appendChild(this);
+                        selectedInputArr.push(this.textContent);
+                        removeSelectedAttribute();
+                        for (i = 0; i < selectHidden.childNodes.length; i++) {
+                            if (selectHidden.childNodes[i].textContent === this.textContent) {
+                                selectHidden.childNodes[i].setAttribute('selected', 'selected');
+                            }
+                        }
+                        selectHidden.dispatchEvent(event);
+                    } else {
+                        this.classList.remove('selected-item');
+                        this.classList.add('unselected-item');
+                        unselected.appendChild(this);
+                        selectedInputArr.splice(selectedInputArr.indexOf(this), 1);
+                        for (i = 0; i < selectHidden.childNodes.length; i++) {
+                            if (selectHidden.childNodes[i].textContent === this.textContent) {
+                                selectHidden.childNodes[i].removeAttribute('selected');
+                            }
+                        }
+                    }
+                }
+            } else {
+                alert('childNode is not an input');
+            }
+            createInputString(selectedInputArr);
+
+            if (!isMultiple) {
+                closeLists();
+            }
+
+            labelToggle();
+        }
+        function createInputString(arr) {
+            let itemsRest = arr.length - 2;
+            if (arr.length === 1) {
+                inputValueText.innerHTML = '';
+                inputValueText.innerHTML = `<span class="highlighted">${arr[0]}</span>`;
+            } else if (arr.length === 2) {
+                inputValueText.innerHTML = '';
+                inputValueText.innerHTML = `<span class="highlighted">${arr[0]}</span>, <span class="highlighted">${arr[1]}</span>`;
+            } else {
+                inputValueText.innerHTML = '';
+            }
+            for (i = 0; i < arr.length; i++) {
+                if (arr.length > 2) {
+                    inputValueText.innerHTML = '';
+                    inputValueText.innerHTML = `<span class="highlighted">${arr[0]}</span>, <span class="highlighted">${arr[1]}</span>, еще ${itemsRest}`;
+                }
+            }
+            coveredHTMLInput = inputValueText.innerHTML;
+        }
+        function clearAll() {
+            itemsArr = [];
+            selectedInputArr = [];
+            labelInput.value = '';
+            inputValueText.innerHTML = '';
+            coveredHTMLInput = '';
+            selected.innerHTML = '';
+            unselected.innerHTML = '';
+            label.classList.remove("clicked");
+            deleteBtn.classList.remove("visible");
+            closeLists();
+            liToggle();
+            removeSelectedAttribute();
+            generateItemsArr(optionsList);
+            createInnerUnselected(itemsArr);
+        }
+        function liToggle() {
+            for(i of unselected.childNodes){
+                i.onclick = liToggleChecked;
+            }
+        }
+        function closeLists() {
+            unselected.classList.remove("open");
+            selected.classList.remove("open");
+            selectBoxes.classList.remove("open");
+            caret.classList.remove("reverted");
+        }
+        function labelToggle() {
+            if (inputValueText.innerHTML !== '') {
+                label.classList.add('clicked');
+                deleteBtn.classList.add('visible');
+            } else {
+                label.classList.remove('clicked');
+                deleteBtn.classList.remove('visible');
+            }
+        }
+        function addOpenClassesOnInput() {
+            addDeleteClasses();
+            caret.classList.add("reverted");
+            unselected.classList.add("open");
+            selected.classList.add("open");
+            selectBoxes.classList.add("open");
+            labelInput.style.borderColor = '#1A55F6';
+        }
+        function removeOpenClasses() {
+            removeDeleteClasses();
+            caret.classList.remove("reverted");
+            unselected.classList.remove("open");
+            selected.classList.remove("open");
+            selectBoxes.classList.remove("open");
+            labelInput.style.borderColor = '#818181';
+        }
+        function toggleOpenClasses() {
+            label.classList.toggle("clicked");
+            deleteBtn.classList.toggle("visible");
+            caret.classList.toggle("reverted");
+            unselected.classList.toggle("open");
+            selected.classList.toggle("open");
+            selectBoxes.classList.toggle("open");
+        }
+        function addDeleteClasses() {
+            label.classList.add('clicked');
+            deleteBtn.classList.add('visible');
+        }
+        function removeDeleteClasses() {
+            label.classList.remove('clicked');
+            deleteBtn.classList.remove('visible');
+        }
+        function removeSelectedAttribute() {
+            for (i = 0; i < selectHidden.children.length; i++) {
+                selectHidden.children[i].removeAttribute('selected');
+            }
+            selectHidden.dispatchEvent(event);
+        }
+    }
+};
+window.DropDownList = DropDownList;
